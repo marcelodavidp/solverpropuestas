@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solver — Propuesta CRM · Centros de Salud</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #080808;
+  --surface: #111;
+  --surface2: #161616;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8e4dc;
+  --text-dim: #a0a098;
+  --text-dimmer: #686860;
+  --c1: #4CAF50;
+  --c1-dim: rgba(76,175,80,0.12);
+  --c1-border: rgba(76,175,80,0.28);
+  --c2: #F5C518;
+  --c2-dim: rgba(245,197,24,0.10);
+  --c2-border: rgba(245,197,24,0.25);
+  --c3: #4d94ff;
+  --c3-dim: rgba(77,148,255,0.12);
+  --c3-border: rgba(77,148,255,0.28);
+  --danger: #ff5252;
+  --danger-dim: rgba(255,82,82,0.10);
+  --danger-border: rgba(255,82,82,0.25);
+  --teal: #00bcd4;
+  --teal-dim: rgba(0,188,212,0.10);
+  --teal-border: rgba(0,188,212,0.25);
+}
+html { scroll-behavior: smooth; }
+body { background:var(--bg); color:var(--text); font-family:'Outfit',sans-serif; font-weight:300; overflow-x:hidden; }
+
+.slide { min-height:100vh; width:100%; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+.slide-inner { flex:1; padding:68px 96px; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:2; }
+
+.brand { position:fixed; top:28px; left:40px; font-family:'Outfit',sans-serif; font-weight:600; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:var(--text-dimmer); z-index:200; }
+#counter { position:fixed; bottom:32px; right:32px; font-family:'Courier Prime',monospace; font-size:10px; color:var(--text-dimmer); letter-spacing:2px; z-index:200; }
+#sidenav { position:fixed; right:24px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:8px; z-index:200; }
+
+.eyebrow { font-family:'Courier Prime',monospace; font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:20px; }
+.title-xl { font-family:'Playfair Display',serif; font-size:clamp(52px,6vw,92px); font-weight:700; line-height:0.92; }
+.title-lg { font-family:'Playfair Display',serif; font-size:clamp(34px,4.2vw,58px); font-weight:600; line-height:0.96; }
+.title-md { font-family:'Playfair Display',serif; font-size:clamp(20px,2.3vw,32px); font-weight:600; line-height:1.1; }
+.body-lg { font-size:17px; line-height:1.75; color:var(--text-dim); }
+.body-md { font-size:15px; line-height:1.65; color:var(--text-dim); }
+.body-sm { font-size:13px; line-height:1.6; color:var(--text-dim); }
+.mono { font-family:'Courier Prime',monospace; }
+.italic { font-style:italic; }
+
+.rule { width:40px; height:1px; margin-bottom:28px; }
+.rule-h { width:100%; height:1px; background:var(--border); margin:24px 0; }
+
+.tag { display:inline-flex; align-items:center; padding:4px 10px; font-family:'Courier Prime',monospace; font-size:9px; letter-spacing:2px; text-transform:uppercase; border-radius:2px; }
+.tag-g { background:var(--c1-dim); color:var(--c1); border:1px solid var(--c1-border); }
+.tag-y { background:var(--c2-dim); color:var(--c2); border:1px solid var(--c2-border); }
+.tag-b { background:var(--c3-dim); color:var(--c3); border:1px solid var(--c3-border); }
+.tag-r { background:var(--danger-dim); color:var(--danger); border:1px solid var(--danger-border); }
+.tag-t { background:var(--teal-dim); color:var(--teal); border:1px solid var(--teal-border); }
+.tag-w { background:rgba(255,255,255,0.05); color:var(--text-dim); border:1px solid var(--border2); }
+
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.slide-inner > * { animation:fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) both; }
+.slide-inner > *:nth-child(1) { animation-delay:0.00s; }
+.slide-inner > *:nth-child(2) { animation-delay:0.08s; }
+.slide-inner > *:nth-child(3) { animation-delay:0.16s; }
+.slide-inner > *:nth-child(4) { animation-delay:0.24s; }
+.slide-inner > *:nth-child(5) { animation-delay:0.32s; }
+.slide-inner > *:nth-child(6) { animation-delay:0.40s; }
+
+.tint-r::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 75% 20%, rgba(255,82,82,0.06) 0%, transparent 55%); pointer-events:none; z-index:1; }
+.tint-g::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 25% 75%, rgba(76,175,80,0.06) 0%, transparent 55%); pointer-events:none; z-index:1; }
+.tint-y::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 75% 75%, rgba(245,197,24,0.05) 0%, transparent 55%); pointer-events:none; z-index:1; }
+.tint-t::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 30% 30%, rgba(0,188,212,0.06) 0%, transparent 55%); pointer-events:none; z-index:1; }
+
+/* PASTOR step indicator */
+.pastor-pill {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:5px 14px; border-radius:2px;
+  font-family:'Courier Prime',monospace; font-size:9px; letter-spacing:3px;
+  text-transform:uppercase; margin-bottom:20px;
+}
+
+/* Toggle buttons */
+.toggle-row { display:flex; gap:8px; margin-bottom:28px; flex-wrap:wrap; }
+.tog-btn {
+  padding:7px 18px; font-family:'Courier Prime',monospace; font-size:10px;
+  letter-spacing:2px; cursor:pointer; transition:all 0.2s; border:none; outline:none;
+}
+.toggle-panel { display:none; }
+.toggle-panel.active { display:block; }
+
+/* Cost reveal toggle */
+.cost-toggle { cursor:pointer; user-select:none; }
+.cost-detail { display:none; }
+.cost-detail.open { display:block; }
+
+.mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+.mt32{margin-top:32px} .mt40{margin-top:40px} .mt48{margin-top:48px}
+</style>
+</head>
+<body>
+
+<div class="brand">Solver</div>
+<div id="counter">01 / 10</div>
+<nav id="sidenav"></nav>
+
+<!-- ══════════════════════
+     S1 — PORTADA
+══════════════════════ -->
+<section class="slide" id="s1" data-color="#4CAF50">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%, rgba(76,175,80,0.06) 0%, transparent 60%);z-index:1;pointer-events:none;"></div>
+  <div style="position:absolute;right:-60px;bottom:-80px;font-family:'Playfair Display',serif;font-size:420px;font-weight:700;color:rgba(76,175,80,0.04);line-height:1;pointer-events:none;user-select:none;z-index:1;">+</div>
+  <div class="slide-inner" style="justify-content:space-between;padding-top:110px;padding-bottom:80px;">
+    <div>
+      <p class="eyebrow">Solver · Propuesta de Upgrade · CRM</p>
+      <h1 class="title-xl mt8" style="max-width:680px;">
+        Sus redes ya<br>están trayendo<br>pacientes.<br>
+        <em class="italic" style="color:var(--c1);">Pero no todos<br>están llegando.</em>
+      </h1>
+    </div>
+    <div>
+      <div class="rule-h"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;">
+        <div>
+          <p class="body-lg">Esta propuesta es para su centro de salud. La inversión en redes ya está generando interés — esta es la conversación sobre qué pasa con ese interés antes de que se convierta en paciente.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--danger);flex-shrink:0;"></div>
+            <p style="font-size:13px;color:var(--text-dim);">Por qué los leads no se están convirtiendo en pacientes</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--danger);flex-shrink:0;"></div>
+            <p style="font-size:13px;color:var(--text-dim);">Lo que cuesta cada lead perdido en dermatología</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--c1);flex-shrink:0;"></div>
+            <p style="font-size:13px;color:var(--text-dim);">La solución — el ecosistema completo</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--c1);flex-shrink:0;"></div>
+            <p style="font-size:13px;color:var(--text-dim);">La transformación — cómo cambia la operación</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--c2);flex-shrink:0;"></div>
+            <p style="font-size:13px;color:var(--text-dim);">La inversión — desglose completo y transparente</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════
+     S2 — P: EL PROBLEMA
+══════════════════════ -->
+<section class="slide tint-r" id="s2" data-color="#ff5252">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--danger),transparent);"></div>
+  <div class="slide-inner">
+
+        <div class="rule" style="background:var(--danger);"></div>
+
+    <div class="grid-2" style="gap:72px;align-items:center;">
+      <div>
+        <h2 class="title-lg">Sus redes funcionan.<br><em class="italic" style="color:var(--danger);">El proceso de<br>después, no.</em></h2>
+        <p class="body-lg mt24">Cada publicación genera consultas. Cada campaña trae mensajes. El centro paga por ese tráfico todos los meses. Pero en el momento en que el paciente potencial escribe, el proceso depende de quién está disponible, quién recuerda responder y quién hace el seguimiento.</p>
+        <p class="body-lg mt16">Ese proceso no es un sistema. Es una cadena de buenas intenciones — y las buenas intenciones no escalan.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <!-- Momento 1 -->
+        <div style="padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--danger);">
+          <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--danger);margin-bottom:6px;">MOMENTO 1</p>
+          <p style="font-size:13px;font-weight:500;margin-bottom:3px;">El paciente escribe por Instagram o WhatsApp</p>
+          <p class="body-sm">Quiere saber precio, disponibilidad o qué procedimiento le conviene. Escribe y espera.</p>
+        </div>
+        <div style="display:flex;justify-content:center;padding:4px 0;">
+          <span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--text-dimmer);">↓</span>
+        </div>
+        <!-- Momento 2 -->
+        <div style="padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--danger);">
+          <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--danger);margin-bottom:6px;">MOMENTO 2</p>
+          <p style="font-size:13px;font-weight:500;margin-bottom:3px;">La recepción lo ve cuando puede</p>
+          <p class="body-sm">Sin alerta. Sin prioridad. Sin criterio de quién responde primero. La respuesta llega en horas, a veces en días.</p>
+        </div>
+        <div style="display:flex;justify-content:center;padding:4px 0;">
+          <span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--text-dimmer);">↓</span>
+        </div>
+        <!-- Momento 3 -->
+        <div style="padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--danger);">
+          <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--danger);margin-bottom:6px;">MOMENTO 3</p>
+          <p style="font-size:13px;font-weight:500;margin-bottom:3px;">El paciente no agendó — y no se sabe por qué</p>
+          <p class="body-sm">No hubo seguimiento. No hay registro del motivo. El lead desapareció y nadie lo notó.</p>
+        </div>
+        <div style="display:flex;justify-content:center;padding:4px 0;">
+          <span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--text-dimmer);">↓</span>
+        </div>
+        <!-- Consecuencia -->
+        <div style="padding:16px 20px;background:rgba(255,82,82,0.06);border:1px solid var(--danger-border);">
+          <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--danger);margin-bottom:6px;">CONSECUENCIA</p>
+          <p style="font-size:13px;font-weight:500;color:var(--text);">Redes trajo el lead. El proceso lo perdió.</p>
+          <p class="body-sm mt8">La inversión mensual en contenido y pauta funcionó. El problema está en lo que pasa después del click.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════
+     S3 — A: AGITACIÓN — LO QUE CUESTA NO ACTUAR
+══════════════════════ -->
+<section class="slide tint-r" id="s3" data-color="#ff5252">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--danger),transparent);"></div>
+  <div style="position:absolute;right:-40px;bottom:-60px;font-family:'Playfair Display',serif;font-size:380px;font-weight:700;color:rgba(255,82,82,0.04);line-height:1;pointer-events:none;user-select:none;z-index:1;">$</div>
+  <div class="slide-inner">
+
+        <div class="rule" style="background:var(--danger);"></div>
+
+    <div class="grid-2" style="gap:72px;align-items:start;">
+      <div>
+        <h2 class="title-lg">Cada lead perdido<br>en dermatología<br><em class="italic" style="color:var(--danger);">no es un contacto.<br>Es una consulta.</em></h2>
+        <p class="body-lg mt24">Un paciente que llega a su centro no viene solo por una consulta. Viene por una relación de largo plazo: ese primer procedimiento, el seguimiento, los tratamientos que se van sumando, y los pacientes que trae por recomendación. El valor real de cada paciente que no se atiende a tiempo no se mide en una cita — se mide en todo lo que esa persona hubiera traído.</p>
+
+        <div style="margin-top:32px;padding:20px 24px;background:var(--surface);border:1px solid var(--danger-border);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--danger);margin-bottom:12px;">LA PREGUNTA QUE IMPORTA</p>
+          <p style="font-family:'Playfair Display',serif;font-size:20px;font-weight:600;line-height:1.3;">Si el centro pierde 4 pacientes potenciales al mes por falta de seguimiento — ¿cuánto dinero sale por la puerta sin que nadie lo vea?</p>
+        </div>
+      </div>
+
+      <div>
+        <!-- Slider interactivo -->
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:20px;">¿CUÁNTO VALE UN PACIENTE PARA SU CENTRO?</p>
+
+        <div style="padding:28px;background:var(--surface);border:1px solid var(--danger-border);">
+          <div style="margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+              <p style="font-size:13px;color:var(--text-dim);">Valor promedio de un paciente</p>
+              <p id="slider-val" style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--text);">$200</p>
+            </div>
+            <input type="range" id="patient-val" min="50" max="2500" step="50" value="200"
+              oninput="updateCalc()"
+              style="width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;
+                     background:linear-gradient(to right, var(--danger) 0%, var(--danger) 6.1%, var(--surface2) 6.1%, var(--surface2) 100%);
+                     -webkit-appearance:none;appearance:none;border:none;">
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <p class="mono" style="font-size:9px;color:var(--text-dimmer);">$50</p>
+              <p class="mono" style="font-size:9px;color:var(--text-dimmer);">$2,500</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+              <p style="font-size:13px;color:var(--text-dim);">Pacientes que se pierden cada mes sin seguimiento</p>
+              <p id="slider-lost" style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--text);">3</p>
+            </div>
+            <input type="range" id="lost-val" min="1" max="15" step="1" value="3"
+              oninput="updateCalc()"
+              style="width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;
+                     background:linear-gradient(to right, var(--danger) 0%, var(--danger) 13.3%, var(--surface2) 13.3%, var(--surface2) 100%);
+                     -webkit-appearance:none;appearance:none;border:none;">
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <p class="mono" style="font-size:9px;color:var(--text-dimmer);">1</p>
+              <p class="mono" style="font-size:9px;color:var(--text-dimmer);">15</p>
+            </div>
+          </div>
+
+          <div class="rule-h" style="margin:0 0 20px 0;"></div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <p style="font-size:13px;color:var(--text-dim);">Lo que sale por la puerta cada mes</p>
+            <p id="result-month" style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--danger);">$600</p>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <p style="font-size:13px;color:var(--text-dim);">En un año, sin hacer nada</p>
+            <p id="result-year" style="font-family:'Playfair Display',serif;font-size:24px;font-weight:600;color:var(--text-dimmer);">$7,200</p>
+          </div>
+
+          <div style="padding:14px 20px;background:rgba(76,175,80,0.08);border:1px solid var(--c1-border);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--c1);margin-bottom:4px;">EL SISTEMA CUESTA</p>
+              <p style="font-size:12px;color:var(--text-dim);">Con recuperar <span id="break-even" style="color:var(--c1);font-weight:500;">1 paciente</span> al mes el sistema se paga solo</p>
+            </div>
+            <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--c1);">$700/mes</p>
+          </div>
+        </div>
+
+        <style>
+          input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--danger); cursor: pointer;
+            border: 2px solid var(--bg);
+          }
+          input[type=range]::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--danger); cursor: pointer;
+            border: 2px solid var(--bg);
+          }
+        </style>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════
+     S4 — S + T: SOLUCIÓN Y TRANSFORMACIÓN
+══════════════════════ -->
+<section class="slide tint-g" id="s4" data-color="#4CAF50">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),transparent);"></div>
+  <div class="slide-inner">
+
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="display:inline-flex;padding:5px 14px;background:var(--c1-dim);border:1px solid var(--c1-border);">
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--c1);"></p>
+      </div>
+      <div style="display:inline-flex;padding:5px 14px;background:var(--teal-dim);border:1px solid var(--teal-border);">
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--teal);"></p>
+      </div>
+    </div>
+    <div class="rule" style="background:var(--c1);"></div>
+
+    <div class="grid-2" style="gap:72px;align-items:start;">
+      <div>
+        <h2 class="title-lg">Redes trae<br>al paciente.<br><em class="italic" style="color:var(--c1);">El CRM<br>lo convierte.</em></h2>
+        <p class="body-lg mt24">El CRM no reemplaza a la recepción ni al médico. Cierra el hueco que existe entre el momento en que el paciente muestra interés y el momento en que agenda su primera cita. Ese hueco es donde se va el dinero hoy.</p>
+
+        <!-- Antes / Después toggle -->
+        <div style="margin-top:32px;">
+          <div class="toggle-row">
+            <button class="tog-btn active" data-target="antes-view" onclick="switchView(this)"
+              style="background:var(--danger-dim);color:var(--danger);border:1px solid var(--danger-border);">
+              HOY
+            </button>
+            <button class="tog-btn" data-target="despues-view" onclick="switchView(this)"
+              style="background:var(--surface);color:var(--text-dimmer);border:1px solid var(--border);">
+              CON CRM
+            </button>
+          </div>
+
+          <div id="antes-view" class="toggle-panel active">
+            <div style="padding:20px;background:var(--surface);border:1px solid var(--danger-border);">
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;gap:10px;"><span style="color:var(--danger);flex-shrink:0;">✗</span><p class="body-sm">El paciente escribe y espera horas</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--danger);flex-shrink:0;">✗</span><p class="body-sm">La recepción atiende cuando hay tiempo</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--danger);flex-shrink:0;">✗</span><p class="body-sm">No hay seguimiento si no responde</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--danger);flex-shrink:0;">✗</span><p class="body-sm">No se sabe cuántos leads llegan ni cuántos se pierden</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--danger);flex-shrink:0;">✗</span><p class="body-sm">El proceso depende de la persona, no del sistema</p></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="despues-view" class="toggle-panel">
+            <div style="padding:20px;background:var(--c1-dim);border:1px solid var(--c1-border);">
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;gap:10px;"><span style="color:var(--c1);flex-shrink:0;">✓</span><p class="body-sm">Respuesta automática en menos de 5 minutos, siempre</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--c1);flex-shrink:0;">✓</span><p class="body-sm">Cada lead tiene responsable, etapa y tiempo de respuesta</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--c1);flex-shrink:0;">✓</span><p class="body-sm">Si no responde, el sistema lo sigue contactando</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--c1);flex-shrink:0;">✓</span><p class="body-sm">Dashboard en tiempo real: cuántos leads, en qué etapa, quién los lleva</p></div>
+                <div style="display:flex;gap:10px;"><span style="color:var(--c1);flex-shrink:0;">✓</span><p class="body-sm">El proceso funciona aunque la recepción esté ocupada o ausente</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:20px;">CÓMO FUNCIONA EL CICLO COMPLETO</p>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);align-items:start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;">
+              <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--c1);">1</p>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">El paciente escribe desde Instagram, WhatsApp o web</p>
+              <p class="body-sm">El sistema captura el mensaje al instante y lo asigna automáticamente, sin que nadie tenga que hacer nada.</p>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);align-items:start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;">
+              <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--c1);">2</p>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">La IA responde, resuelve dudas y agenda la cita</p>
+              <p class="body-sm">Un asistente con inteligencia artificial responde preguntas frecuentes, informa procedimientos, precios y disponibilidad, y ofrece los horarios disponibles para agendar — sin necesidad de que haya una persona detrás.</p>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);align-items:start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;">
+              <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--c1);">3</p>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Recordatorio automático antes de la cita</p>
+              <p class="body-sm">El sistema envía un mensaje de recordatorio 24 horas antes. El paciente confirma o reagenda. Las citas perdidas por olvido se reducen a casi cero.</p>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);align-items:start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;">
+              <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--c1);">4</p>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Encuesta de satisfacción después de cada consulta</p>
+              <p class="body-sm">Horas después de la visita, el paciente recibe un mensaje corto preguntando cómo fue la experiencia. El centro obtiene retroalimentación real sin pedirla en el momento.</p>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:16px;padding:14px 0;align-items:start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;">
+              <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--c1);">5</p>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">El sistema recuerda cuándo debe volver</p>
+              <p class="body-sm">Para tratamientos con seguimiento o citas recurrentes, el sistema avisa al paciente en el momento justo para reagendar. El centro no tiene que llamar — el sistema lo hace.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════
+     S5 — O: LA OFERTA
+══════════════════════ -->
+<section class="slide tint-y" id="s5" data-color="#F5C518">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c2),transparent);"></div>
+  <div style="position:absolute;right:-50px;bottom:-60px;font-family:'Playfair Display',serif;font-size:380px;font-weight:700;color:rgba(245,197,24,0.04);line-height:1;pointer-events:none;user-select:none;z-index:1;">O</div>
+  <div class="slide-inner">
+
+        <div class="rule" style="background:var(--c2);"></div>
+
+    <div class="grid-2" style="gap:72px;align-items:start;">
+      <div>
+        <h2 class="title-lg">Una sola factura.<br><em class="italic" style="color:var(--c2);">El ecosistema<br>completo.</em></h2>
+        <p class="body-lg mt24">El upgrade suma el CRM al servicio de redes que ya tiene. Todo administrado por Solver, todo en una sola factura. Sin contratos con plataformas externas, sin gestión de licencias, sin fricción técnica.</p>
+
+        <div style="margin-top:32px;padding:20px 24px;background:var(--surface);border:1px solid var(--c2-border);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--c2);margin-bottom:10px;">POR QUÉ UNA SOLA FACTURA</p>
+          <p class="body-sm">Solver administra la licencia de GoHighLevel y la incluye en el cobro mensual. El centro no tiene que crear cuentas, gestionar pagos externos ni preocuparse por la plataforma. Solo usa el sistema.</p>
+        </div>
+
+        <!-- Lo que ya tiene vs lo que suma -->
+        <div style="margin-top:20px;padding:20px 24px;background:var(--surface);border:1px solid var(--border);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:14px;">LO QUE CAMBIA EN SU INVERSIÓN MENSUAL</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+              <div>
+                <p style="font-size:13px;font-weight:500;">Servicio de redes sociales</p>
+                <p class="body-sm">Sin cambios — mismo servicio, mismo equipo</p>
+              </div>
+              <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--text-dim);">$600</p>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+              <div>
+                <p style="font-size:13px;font-weight:500;color:var(--c2);">+ Servicio CRM completo</p>
+                <p class="body-sm">Solver asume la plataforma, las licencias, el desarrollo técnico y la operación</p>
+              </div>
+              <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--c2);">$700</p>
+            </div>
+          </div>
+          <div class="rule-h"></div>
+
+          <!-- Precio antes de descuento -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;">
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--text-dimmer);">Total antes del descuento</p>
+              <p class="body-sm">$1,300 + 15% IVA</p>
+            </div>
+            <div style="text-align:right;">
+              <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:var(--text-dimmer);text-decoration:line-through;">$1,495</p>
+              <p class="mono" style="font-size:9px;color:var(--text-dimmer);letter-spacing:2px;">IVA incluido</p>
+            </div>
+          </div>
+
+          <!-- Descuento -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(76,175,80,0.08);border:1px solid var(--c1-border);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="tag tag-g" style="font-size:9px;">15% descuento</span>
+              <p style="font-size:12px;color:var(--text-dim);">Solver asume el IVA como parte del servicio</p>
+            </div>
+            <p style="font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--c1);">− $195</p>
+          </div>
+
+          <!-- Total final -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;">
+            <div>
+              <p style="font-size:15px;font-weight:500;">Total que paga</p>
+              <p class="body-sm">Una sola factura · IVA incluido · sin sorpresas</p>
+            </div>
+            <p style="font-family:'Playfair Display',serif;font-size:48px;font-weight:700;color:var(--c2);">$1,300</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:20px;">QUÉ ASUME SOLVER EN LOS $700 MENSUALES</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+
+          <div style="padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c3);">
+            <p class="mono" style="font-size:9px;color:var(--c3);letter-spacing:2px;margin-bottom:6px;">PLATAFORMA Y LICENCIAS</p>
+            <p style="font-size:13px;font-weight:500;margin-bottom:4px;">Solver administra todo lo técnico</p>
+            <p class="body-sm">La plataforma del CRM, sus licencias, integraciones con WhatsApp, Instagram y web. El centro no crea cuentas ni gestiona pagos externos. Solo usa el sistema.</p>
+          </div>
+
+          <div style="padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c2);">
+            <p class="mono" style="font-size:9px;color:var(--c2);letter-spacing:2px;margin-bottom:6px;">DESARROLLO Y AUTOMATIZACIONES</p>
+            <p style="font-size:13px;font-weight:500;margin-bottom:4px;">El sistema configurado para su centro</p>
+            <p class="body-sm">Flujos de respuesta automática con IA, recordatorios de citas, encuestas de satisfacción, secuencias de reactivación y recordatorios de citas recurrentes — todo diseñado para el proceso de un centro de salud.</p>
+          </div>
+
+          <div style="padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c2);">
+            <p class="mono" style="font-size:9px;color:var(--c2);letter-spacing:2px;margin-bottom:6px;">REVISIÓN MENSUAL DE AUTOMATIZACIONES</p>
+            <p style="font-size:13px;font-weight:500;margin-bottom:4px;">El sistema mejora con el tiempo</p>
+            <p class="body-sm">Cada mes Solver revisa qué está funcionando, ajusta mensajes, mejora flujos y agrega automatizaciones nuevas según el comportamiento real de los pacientes.</p>
+          </div>
+
+          <div style="padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c1);">
+            <p class="mono" style="font-size:9px;color:var(--c1);letter-spacing:2px;margin-bottom:6px;">IMPLEMENTACIÓN SIN COSTO ADICIONAL</p>
+            <p style="font-size:13px;font-weight:500;margin-bottom:4px;">Beneficio exclusivo por ser cliente de redes</p>
+            <p class="body-sm">El proceso de configuración e implementación inicial no tiene costo adicional para clientes que ya tienen el servicio de redes con Solver. El sistema arranca sin inversión inicial extra.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════
+     S6 — R: EL PRÓXIMO PASO
+══════════════════════ -->
+<section class="slide tint-g" id="s6" data-color="#4CAF50">
+  <div style="position:absolute;right:-60px;top:-60px;font-family:'Playfair Display',serif;font-size:380px;font-weight:700;color:rgba(76,175,80,0.04);line-height:1;pointer-events:none;user-select:none;z-index:1;">→</div>
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c1),transparent);"></div>
+  <div class="slide-inner" style="justify-content:space-between;padding-top:100px;padding-bottom:80px;">
+    <div>
+            <div class="rule" style="background:var(--c1);"></div>
+      <h1 class="title-xl" style="max-width:640px;">
+        El primer lead<br>que el sistema salve<br><em class="italic" style="color:var(--c1);">paga el servicio<br>completo.</em>
+      </h1>
+    </div>
+
+    <div>
+      <div class="rule-h"></div>
+      <div class="grid-3" style="margin-bottom:32px;">
+
+        <div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--danger);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--danger);margin-bottom:12px;">ESTA SEMANA</p>
+          <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:600;margin-bottom:10px;">Confirmar el upgrade</p>
+          <p class="body-sm">Aprobar la propuesta y definir la fecha de arranque. El servicio de redes no se interrumpe en ningún momento.</p>
+          <div style="margin-top:16px;padding:10px 14px;background:var(--surface2);">
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--text-dimmer);">RESPONSABLE: CENTRO</p>
+          </div>
+        </div>
+
+        <div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--c2);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--c2);margin-bottom:12px;">SEMANA 1</p>
+          <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:600;margin-bottom:10px;">Sesión de arranque</p>
+          <p class="body-sm">Primera sesión de trabajo: segmentación de pacientes, tipos de consulta y configuración inicial del pipeline. 90 minutos con el médico director y la recepción.</p>
+          <div style="margin-top:16px;padding:10px 14px;background:var(--surface2);">
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--text-dimmer);">RESPONSABLE: SOLVER</p>
+          </div>
+        </div>
+
+        <div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--c1);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--c1);margin-bottom:12px;">SEMANA 10</p>
+          <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:600;margin-bottom:10px;">Sistema operativo</p>
+          <p class="body-sm">CRM activo, equipo capacitado, automatizaciones corriendo. El primer informe mensual llega antes de terminar el mes 2. Los datos son del centro desde el primer día.</p>
+          <div style="margin-top:16px;padding:10px 14px;background:var(--surface2);">
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--text-dimmer);">RESPONSABLE: SOLVER</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="padding:20px 32px;background:rgba(76,175,80,0.06);border:1px solid var(--c1-border);display:flex;justify-content:space-between;align-items:center;gap:40px;">
+        <p class="body-md" style="color:var(--text);">
+          Usted ya tiene el canal. Redes está trayendo el interés. Lo que falta es el sistema que convierte ese interés en pacientes. Ese sistema es el siguiente paso natural — y tiene sentido construirlo con quien ya conoce su marca.
+        </p>
+        <div style="flex-shrink:0;">
+          <span class="tag tag-g" style="font-size:10px;white-space:nowrap;">Arrancamos esta semana</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════
+     S7 — CIERRE: TODO EL VALOR
+══════════════════════ -->
+<section class="slide" id="s7" data-color="#F5C518">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%, rgba(245,197,24,0.04) 0%, transparent 65%);pointer-events:none;z-index:1;"></div>
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c2),transparent);"></div>
+  <div class="slide-inner" style="padding-top:60px;padding-bottom:60px;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:36px;">
+      <p class="eyebrow" style="text-align:center;">Todo lo que recibe · En una sola decisión</p>
+      <h2 class="title-lg" style="text-align:center;">
+        ¿Cuánto vale<br><em class="italic" style="color:var(--c2);">no perder un solo paciente más?</em>
+      </h2>
+    </div>
+
+    <!-- Value inventory — 3 columns -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:24px;">
+
+      <!-- Col 1 -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c1);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c1);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Sistema que responde 24/7</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">Ningún paciente espera horas. Ninguno se va con otro centro por falta de respuesta.</p>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c1);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c1);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">IA que responde preguntas y agenda</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">Sin persona detrás. El paciente consulta, recibe información y agenda su cita en el mismo chat.</p>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c1);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c1);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Seguimiento automático a quien no responde</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">Los pacientes que hoy se pierden en silencio son reactivados por el sistema.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 2 -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c2);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c2);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Recordatorio automático antes de cada cita</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">Los no-shows bajan. El equipo deja de llamar para confirmar uno por uno.</p>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c2);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c2);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Encuesta de satisfacción post-consulta</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">El centro recibe retroalimentación real de cada visita. Sin pedirla en el momento.</p>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c2);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c2);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Recordatorio de vuelta para tratamientos recurrentes</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">El paciente regresa porque el sistema lo recuerda. No porque el equipo lo llame.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 3 -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c3);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c3);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Plataforma y licencias asumidas por Solver</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">Sin contratos técnicos, sin cuentas que administrar, sin sorpresas en la factura.</p>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c3);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c3);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Informe mensual de conversiones</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">Cuántos llegaron, cuántos agendaron, cuántos se perdieron y por qué. Datos para decidir.</p>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--c3);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--c3);font-size:14px;flex-shrink:0;margin-top:1px;">✓</span>
+          <div>
+            <p style="font-size:12px;font-weight:500;margin-bottom:2px;">Implementación sin costo adicional</p>
+            <p style="font-size:11px;color:var(--text-dimmer);">Por ser cliente activo de redes, el proceso de arranque no tiene cargo extra.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Slider + cierre -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;">
+
+      <!-- Slider de valor -->
+      <div style="padding:20px 24px;background:var(--surface);border:1px solid var(--c2-border);">
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--c2);margin-bottom:16px;">¿CUÁNTO VALE UN PACIENTE PARA SU CENTRO?</p>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+          <p style="font-size:13px;color:var(--text-dim);">Valor por paciente</p>
+          <p id="close-val" style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--c2);">$200</p>
+        </div>
+        <input type="range" id="close-patient" min="50" max="2500" step="50" value="200"
+          oninput="updateClose()"
+          style="width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;border:none;
+                 background:linear-gradient(to right, var(--c2) 0%, var(--c2) 6.1%, var(--surface2) 6.1%, var(--surface2) 100%);
+                 -webkit-appearance:none;appearance:none;">
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+          <p class="mono" style="font-size:9px;color:var(--text-dimmer);">$50</p>
+          <p class="mono" style="font-size:9px;color:var(--text-dimmer);">$2,500</p>
+        </div>
+        <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--surface2);">
+          <p style="font-size:12px;color:var(--text-dim);">Con <span id="close-needed" style="color:var(--c2);font-weight:500;">4 pacientes</span> adicionales al mes el upgrade se paga solo</p>
+        </div>
+      </div>
+
+      <!-- El cierre -->
+      <div>
+        <div style="padding:24px;background:rgba(245,197,24,0.06);border:1px solid var(--c2-border);margin-bottom:12px;">
+          <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:600;line-height:1.2;margin-bottom:12px;">
+            Todo esto por <em style="color:var(--c2);">$700 al mes.</em><br>Menos de lo que cuesta perder<br>un paciente.
+          </p>
+          <p class="body-sm">Solver ya conoce su centro, su marca y su voz. El sistema arranca sobre lo que ya funciona — sin interrumpir nada, sin curvas de aprendizaje, sin riesgo.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);text-align:center;">
+            <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--c2);">10</p>
+            <p class="mono" style="font-size:8px;letter-spacing:2px;color:var(--text-dimmer);margin-top:4px;">SEMANAS PARA ESTAR ACTIVO</p>
+          </div>
+          <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);text-align:center;">
+            <p style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--c1);">$0</p>
+            <p class="mono" style="font-size:8px;letter-spacing:2px;color:var(--text-dimmer);margin-top:4px;">COSTO DE ARRANQUE</p>
+          </div>
+          <div style="padding:14px 16px;background:rgba(76,175,80,0.06);border:1px solid var(--c1-border);text-align:center;grid-column:span 2;">
+            <p style="font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--c1);">Arrancamos esta semana</p>
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--text-dimmer);margin-top:4px;">UNA CONVERSACIÓN · UNA DECISIÓN · UN SISTEMA</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+#close-patient::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--c2); cursor:pointer;
+  border:2px solid var(--bg);
+}
+#close-patient::-moz-range-thumb {
+  width:18px; height:18px; border-radius:50%;
+  background:var(--c2); cursor:pointer;
+  border:2px solid var(--bg);
+}
+</style>
+
+<script>
+function updateClose() {
+  const val = parseInt(document.getElementById('close-patient').value);
+  document.getElementById('close-val').textContent = '$' + val.toLocaleString();
+  const needed = Math.ceil(700 / val);
+  document.getElementById('close-needed').textContent = needed === 1 ? '1 paciente' : needed + ' pacientes';
+  const pct = ((val - 50) / (2500 - 50) * 100).toFixed(1);
+  document.getElementById('close-patient').style.background =
+    `linear-gradient(to right, var(--c2) 0%, var(--c2) ${pct}%, var(--surface2) ${pct}%, var(--surface2) 100%)`;
+}
+</script>
+
+<!-- ══════════════════════
+     S7b — INTEGRACIÓN DE AGENDAMIENTO
+══════════════════════ -->
+<section class="slide tint-t" id="s7b" data-color="#00bcd4">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent);"></div>
+  <div style="position:absolute;right:-50px;bottom:-60px;font-family:'Playfair Display',serif;font-size:360px;font-weight:700;color:rgba(0,188,212,0.04);line-height:1;pointer-events:none;user-select:none;z-index:1;">⚙</div>
+  <div class="slide-inner">
+    <p class="eyebrow">Paso previo al arranque · Requiere confirmación del centro</p>
+    <div class="rule" style="width:40px;height:1px;background:var(--teal);margin-bottom:28px;"></div>
+
+    <div class="grid-2" style="gap:72px;align-items:start;">
+
+      <!-- Izquierda -->
+      <div>
+        <h2 class="title-lg">Para conectar<br>el CRM con<br><em class="italic" style="color:var(--teal);">su sistema<br>de agenda</em></h2>
+        <p class="body-lg mt24">El sistema de agendamiento actual se mantiene como la fuente principal de la agenda. GoHighLevel se conecta a él para gestionar la comunicación con los pacientes — recordatorios, confirmaciones y seguimiento posterior.</p>
+        <p class="body-lg mt16">Para que esta integración funcione, necesitamos validar con su proveedor que el sistema cuenta con las capacidades técnicas necesarias.</p>
+
+        <div style="margin-top:32px;padding:20px 24px;background:var(--surface);border:1px solid var(--danger-border);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--danger);margin-bottom:10px;">COSTO ADICIONAL</p>
+          <p class="body-sm">El desarrollo de esta integración tiene un costo adicional al servicio mensual. El valor exacto se define una vez confirmadas las capacidades del proveedor y el nivel de complejidad técnica requerido.</p>
+          <div style="margin-top:12px;padding:10px 14px;background:var(--danger-dim);border:1px solid var(--danger-border);display:flex;justify-content:space-between;align-items:center;">
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--danger);">SE COTIZA DESPUÉS DE VALIDAR CON EL PROVEEDOR</p>
+          </div>
+        </div>
+
+        <!-- Acción requerida -->
+        <div style="margin-top:16px;padding:20px 24px;background:rgba(0,188,212,0.06);border:1px solid var(--teal-border);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--teal);margin-bottom:10px;">ACCIÓN REQUERIDA DEL CENTRO</p>
+          <p class="body-sm">Confirmar con su proveedor de agenda las capacidades listadas al lado. Si es posible, obtener documentación técnica o contacto directo para revisar los detalles con el equipo de Solver.</p>
+        </div>
+      </div>
+
+      <!-- Derecha: las 3 capacidades a validar -->
+      <div>
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:20px;">LO QUE NECESITAMOS VALIDAR CON SU PROVEEDOR</p>
+
+        <!-- Capacidad 1 -->
+        <div style="padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--teal);margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:24px;height:24px;border-radius:2px;background:var(--teal-dim);border:1px solid var(--teal-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <p style="font-family:'Playfair Display',serif;font-size:11px;font-weight:700;color:var(--teal);">1</p>
+              </div>
+              <p style="font-size:13px;font-weight:500;">Consulta de disponibilidad</p>
+            </div>
+            <span class="tag tag-t" style="font-size:9px;flex-shrink:0;">API</span>
+          </div>
+          <p class="body-sm">Un endpoint que permita consultar los horarios disponibles, considerando agendas, profesionales y/o servicios. Es necesario para que el sistema pueda ofrecer al paciente opciones reales de cita.</p>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+            <div style="width:14px;height:14px;border:1px solid var(--border2);border-radius:2px;flex-shrink:0;"></div>
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--text-dimmer);">PENDIENTE CONFIRMAR CON PROVEEDOR</p>
+          </div>
+        </div>
+
+        <!-- Capacidad 2 -->
+        <div style="padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--teal);margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:24px;height:24px;border-radius:2px;background:var(--teal-dim);border:1px solid var(--teal-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <p style="font-family:'Playfair Display',serif;font-size:11px;font-weight:700;color:var(--teal);">2</p>
+              </div>
+              <p style="font-size:13px;font-weight:500;">Creación de citas</p>
+            </div>
+            <span class="tag tag-t" style="font-size:9px;flex-shrink:0;">API</span>
+          </div>
+          <p class="body-sm">Un endpoint que permita crear una cita directamente en el sistema desde GoHighLevel. La agenda del centro sigue siendo la fuente principal — GHL solo escribe en ella, no la reemplaza.</p>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+            <div style="width:14px;height:14px;border:1px solid var(--border2);border-radius:2px;flex-shrink:0;"></div>
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--text-dimmer);">PENDIENTE CONFIRMAR CON PROVEEDOR</p>
+          </div>
+        </div>
+
+        <!-- Capacidad 3 -->
+        <div style="padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c2);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:24px;height:24px;border-radius:2px;background:var(--c2-dim);border:1px solid var(--c2-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <p style="font-family:'Playfair Display',serif;font-size:11px;font-weight:700;color:var(--c2);">3</p>
+              </div>
+              <p style="font-size:13px;font-weight:500;">Notificación de citas agendadas</p>
+            </div>
+            <span class="tag tag-y" style="font-size:9px;flex-shrink:0;">Webhook</span>
+          </div>
+          <p class="body-sm">Un mecanismo que notifique a GoHighLevel cuando una cita es creada o confirmada en el sistema, incluyendo fecha y hora. Con esto se activan automáticamente:</p>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;gap:8px;"><span style="color:var(--c2);font-size:11px;flex-shrink:0;">→</span><p style="font-size:11px;color:var(--text-dim);">Recordatorio automático previo a la cita</p></div>
+            <div style="display:flex;gap:8px;"><span style="color:var(--c2);font-size:11px;flex-shrink:0;">→</span><p style="font-size:11px;color:var(--text-dim);">Encuesta de satisfacción 4 horas después de la consulta</p></div>
+            <div style="display:flex;gap:8px;"><span style="color:var(--c2);font-size:11px;flex-shrink:0;">→</span><p style="font-size:11px;color:var(--text-dim);">Seguimiento posterior al tratamiento</p></div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+            <div style="width:14px;height:14px;border:1px solid var(--border2);border-radius:2px;flex-shrink:0;"></div>
+            <p class="mono" style="font-size:9px;letter-spacing:2px;color:var(--text-dimmer);">PENDIENTE CONFIRMAR CON PROVEEDOR</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════
+     S8 — PUBLICIDAD
+══════════════════════ -->
+<section class="slide tint-b" id="s8" data-color="#4d94ff">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c3),transparent);"></div>
+  <div style="position:absolute;right:-50px;bottom:-60px;font-family:'Playfair Display',serif;font-size:380px;font-weight:700;color:rgba(77,148,255,0.04);line-height:1;pointer-events:none;user-select:none;z-index:1;">◈</div>
+  <div class="slide-inner">
+    <p class="eyebrow">Servicio de Redes Sociales · Lo que está incluido</p>
+    <div class="rule" style="width:40px;height:1px;background:var(--c3);margin-bottom:28px;"></div>
+
+    <div class="grid-2" style="gap:72px;align-items:start;">
+      <div>
+        <h2 class="title-lg">Publicidad que<br>genera resultados.<br><em class="italic" style="color:var(--c3);">No solo<br>seguidores.</em></h2>
+        <p class="body-lg mt24">El servicio de redes no es solo publicar contenido. Es un sistema de comunicación estratégica que construye marca, atrae pacientes y convierte visibilidad en consultas reales.</p>
+
+        <div style="margin-top:32px;padding:20px 24px;background:var(--surface);border:1px solid var(--c3-border);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--c3);margin-bottom:10px;">LA DIFERENCIA</p>
+          <p class="body-sm">La mayoría de los centros de salud tienen redes activas. Los que crecen tienen una estrategia detrás — saben a quién le hablan, qué les dicen y cuánto invierten en llegarles. Eso es lo que Solver hace.</p>
+        </div>
+
+        <div style="margin-top:16px;padding:20px 24px;background:var(--surface);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:4px;">INVERSIÓN MENSUAL</p>
+            <p class="body-sm">Servicio completo de redes y publicidad</p>
+          </div>
+          <p style="font-family:'Playfair Display',serif;font-size:48px;font-weight:700;color:var(--c3);">$600</p>
+        </div>
+      </div>
+
+      <div>
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:20px;">QUÉ INCLUYE EL SERVICIO</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+
+          <div style="padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c3);display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c3-dim);border:1px solid var(--c3-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--c3);"></div>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Dirección estratégica de Branding & Comunicación</p>
+              <p class="body-sm">Definición del tono, mensajes clave y posicionamiento del centro en cada canal. La voz del centro es coherente en todo momento.</p>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c3);display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c3-dim);border:1px solid var(--c3-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--c3);"></div>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Planificación y estrategia de anuncios</p>
+              <p class="body-sm">Cada peso invertido en pauta tiene un objetivo. Se define qué campañas correr, para quién y con qué mensaje antes de gastar un solo dólar.</p>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c2);display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c2-dim);border:1px solid var(--c2-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--c2);"></div>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Gestión basada en insights · métricas orgánicas y de pago</p>
+              <p class="body-sm">Trackeo, análisis y reportería continua de lo que funciona y lo que no. Las decisiones de contenido y pauta se toman con datos, no con intuición.</p>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c2);display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c2-dim);border:1px solid var(--c2-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--c2);"></div>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Ejecución, medición y optimización de publicidad paga</p>
+              <p class="body-sm">Campañas activas en Meta con optimización continua. El presupuesto se ajusta en tiempo real según el rendimiento de cada anuncio.</p>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c1);display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--c1);"></div>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Producción de contenido con equipo de 4 personas</p>
+              <p class="body-sm">Videos, carruseles y artes diseñados para Meta — producidos para convertir, no solo para verse bien. Cada pieza responde a la estrategia de pauta del mes.</p>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c1);display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--c1);"></div>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Creación y publicación de anuncios</p>
+              <p class="body-sm">Gestión completa de las campañas en Meta: creación de los anuncios, segmentación de audiencia, publicación y ajuste según los resultados reales.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<script>
+function updateClose() {
+  const val = parseInt(document.getElementById('close-patient').value);
+  document.getElementById('close-val').textContent = '$' + val.toLocaleString();
+  const needed = Math.ceil(700 / val);
+  document.getElementById('close-needed').textContent = needed === 1 ? '1 paciente' : needed + ' pacientes';
+  const pct = ((val - 50) / (2500 - 50) * 100).toFixed(1);
+  document.getElementById('close-patient').style.background =
+    `linear-gradient(to right, var(--c2) 0%, var(--c2) ${pct}%, var(--surface2) ${pct}%, var(--surface2) 100%)`;
+}
+
+function updateCalc() {
+  const pVal = parseInt(document.getElementById('patient-val').value);
+  const lVal = parseInt(document.getElementById('lost-val').value);
+  const monthly = pVal * lVal;
+  const yearly = monthly * 12;
+
+  document.getElementById('slider-val').textContent = '$' + pVal.toLocaleString();
+  document.getElementById('slider-lost').textContent = lVal;
+  document.getElementById('result-month').textContent = '$' + monthly.toLocaleString();
+  document.getElementById('result-year').textContent = '$' + yearly.toLocaleString();
+
+  const needed = Math.ceil(700 / pVal);
+  document.getElementById('break-even').textContent = needed === 1 ? '1 paciente' : needed + ' pacientes';
+
+  const pSlider = document.getElementById('patient-val');
+  const lSlider = document.getElementById('lost-val');
+  const pPct = ((pVal - 50) / (2500 - 50) * 100).toFixed(1);
+  const lPct = ((lVal - 1) / (15 - 1) * 100).toFixed(1);
+  pSlider.style.background = `linear-gradient(to right, var(--danger) 0%, var(--danger) ${pPct}%, var(--surface2) ${pPct}%, var(--surface2) 100%)`;
+  lSlider.style.background = `linear-gradient(to right, var(--danger) 0%, var(--danger) ${lPct}%, var(--surface2) ${lPct}%, var(--surface2) 100%)`;
+}
+
+function switchView(btn) {
+  const targetId = btn.dataset.target;
+  const row = btn.parentElement;
+  row.querySelectorAll('.tog-btn').forEach(b => {
+    b.style.background = 'var(--surface)';
+    b.style.color = 'var(--text-dimmer)';
+    b.style.borderColor = 'var(--border)';
+    b.classList.remove('active');
+  });
+
+  const target = document.getElementById(targetId);
+  if (targetId.includes('antes')) {
+    btn.style.background = 'var(--danger-dim)';
+    btn.style.color = 'var(--danger)';
+    btn.style.borderColor = 'var(--danger-border)';
+  } else {
+    btn.style.background = 'var(--c1-dim)';
+    btn.style.color = 'var(--c1)';
+    btn.style.borderColor = 'var(--c1-border)';
+  }
+  btn.classList.add('active');
+
+  const section = btn.closest('section');
+  section.querySelectorAll('.toggle-panel').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  if (target) {
+    target.classList.add('active');
+    target.style.display = 'block';
+  }
+}
+
+document.querySelectorAll('.toggle-panel').forEach(p => {
+  p.style.display = p.classList.contains('active') ? 'block' : 'none';
+});
+
+const slides = document.querySelectorAll('.slide');
+const nav = document.getElementById('sidenav');
+const counter = document.getElementById('counter');
+const total = slides.length;
+
+slides.forEach((slide, i) => {
+  const d = document.createElement('div');
+  const color = slide.dataset.color || '#4CAF50';
+  d.style.cssText = `width:5px;height:5px;border-radius:50%;background:#2a2a2a;cursor:pointer;transition:all 0.35s cubic-bezier(0.4,0,0.2,1);`;
+  d.onclick = () => slide.scrollIntoView({ behavior:'smooth' });
+  if (i === 0) { d.style.background = color; d.style.height = '20px'; d.style.borderRadius = '3px'; }
+  nav.appendChild(d);
+});
+
+const dots = nav.querySelectorAll('div');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const i = Array.from(slides).indexOf(e.target);
+    const color = e.target.dataset.color || '#4CAF50';
+    dots.forEach(d => { d.style.background = '#2a2a2a'; d.style.height = '5px'; d.style.borderRadius = '50%'; });
+    dots[i].style.background = color;
+    dots[i].style.height = '20px';
+    dots[i].style.borderRadius = '3px';
+    counter.textContent = String(i+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+  });
+}, { threshold:0.5 });
+
+slides.forEach(s => obs.observe(s));
+document.addEventListener('keydown', e => {
+  const active = Array.from(dots).findIndex(d => d.style.height === '20px');
+  if (['ArrowDown','ArrowRight'].includes(e.key)) { e.preventDefault(); slides[Math.min(active+1,total-1)].scrollIntoView({ behavior:'smooth' }); }
+  if (['ArrowUp','ArrowLeft'].includes(e.key)) { e.preventDefault(); slides[Math.max(active-1,0)].scrollIntoView({ behavior:'smooth' }); }
+});
+<!-- ══════════════════════
+     S9 — INTEGRACIÓN CON SISTEMA DE AGENDAMIENTO
+══════════════════════ -->
+<section class="slide" id="s9" data-color="#4d94ff">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--c3),var(--c2),transparent);"></div>
+  <div style="position:absolute;right:-50px;bottom:-60px;font-family:'Playfair Display',serif;font-size:380px;font-weight:700;color:rgba(77,148,255,0.04);line-height:1;pointer-events:none;user-select:none;z-index:1;">⚡</div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%, rgba(77,148,255,0.05) 0%, transparent 55%);pointer-events:none;z-index:1;"></div>
+  <div class="slide-inner">
+
+    <p class="eyebrow">Integración técnica · Paso previo a la implementación</p>
+    <div class="rule" style="width:40px;height:1px;background:var(--c3);margin-bottom:28px;"></div>
+
+    <div class="grid-2" style="gap:72px;align-items:start;">
+
+      <!-- IZQUIERDA -->
+      <div>
+        <h2 class="title-lg">Para que el sistema<br>funcione, necesitamos<br><em class="italic" style="color:var(--c3);">validar la integración<br>con su agenda.</em></h2>
+        <p class="body-lg mt24">La idea es mantener el sistema de agendamiento actual como fuente principal de la agenda, y utilizar GoHighLevel exclusivamente para gestionar la comunicación con los pacientes — recordatorios, confirmaciones y seguimiento posterior.</p>
+        <p class="body-lg mt16">Para esto necesitamos que el proveedor de su sistema actual confirme que cuenta con tres capacidades específicas.</p>
+
+        <!-- Costo adicional -->
+        <div style="margin-top:32px;padding:20px 24px;background:rgba(245,197,24,0.06);border:1px solid var(--c2-border);">
+          <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--c2);margin-bottom:10px;">COSTO ADICIONAL · DESARROLLO DE INTEGRACIÓN</p>
+          <p class="body-sm">La integración entre GoHighLevel y el sistema de agendamiento actual implica desarrollo técnico que no está incluido en el servicio base. Una vez validadas las capacidades con el proveedor, se cotizará el costo de integración por separado antes de proceder.</p>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:12px;">
+            <span class="tag tag-y" style="font-size:9px;">Cotización por separado</span>
+            <span class="tag" style="font-size:9px;background:rgba(77,148,255,0.10);color:var(--c3);border:1px solid var(--c3-border);">Sujeto a validación técnica</span>
+          </div>
+        </div>
+
+        <!-- Próximo paso -->
+        <div style="margin-top:16px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:2px;background:var(--c1-dim);border:1px solid var(--c1-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--c1);">→</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:500;margin-bottom:3px;">Próximo paso — validar con el proveedor</p>
+            <p class="body-sm">El centro confirma con el proveedor de su sistema de agendamiento si cuenta con las 3 capacidades descritas, y si es posible contar con documentación técnica o contacto directo para revisar los detalles.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DERECHA: las 3 capacidades -->
+      <div>
+        <p class="mono" style="font-size:9px;letter-spacing:3px;color:var(--text-dimmer);margin-bottom:20px;">LAS 3 CAPACIDADES QUE NECESITAMOS CONFIRMAR</p>
+
+        <!-- Capacidad 1 -->
+        <div style="padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c3);margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:24px;height:24px;border-radius:2px;background:var(--c3-dim);border:1px solid var(--c3-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <p style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--c3);">1</p>
+              </div>
+              <p style="font-size:13px;font-weight:500;">Consulta de disponibilidad</p>
+            </div>
+            <span class="tag" style="font-size:9px;background:var(--c3-dim);color:var(--c3);border:1px solid var(--c3-border);flex-shrink:0;">API</span>
+          </div>
+          <p class="body-sm" style="margin-bottom:10px;">Un punto de acceso que permita consultar los horarios disponibles, considerando agendas, profesionales y/o servicios. GoHighLevel lo consultará para ofrecer opciones reales al paciente antes de confirmar.</p>
+          <div style="padding:8px 12px;background:var(--surface2);display:flex;align-items:center;gap:8px;">
+            <p class="mono" style="font-size:9px;color:var(--text-dimmer);">Confirmar con proveedor:</p>
+            <p class="mono" style="font-size:9px;color:var(--c3);">¿Existe endpoint de disponibilidad?</p>
+          </div>
+        </div>
+
+        <!-- Capacidad 2 -->
+        <div style="padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c3);margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:24px;height:24px;border-radius:2px;background:var(--c3-dim);border:1px solid var(--c3-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <p style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--c3);">2</p>
+              </div>
+              <p style="font-size:13px;font-weight:500;">Creación de citas</p>
+            </div>
+            <span class="tag" style="font-size:9px;background:var(--c3-dim);color:var(--c3);border:1px solid var(--c3-border);flex-shrink:0;">API</span>
+          </div>
+          <p class="body-sm" style="margin-bottom:10px;">Un punto de acceso que permita registrar una cita directamente en el sistema, desde GoHighLevel, una vez que el paciente confirme su horario. La agenda oficial siempre vive en el sistema actual.</p>
+          <div style="padding:8px 12px;background:var(--surface2);display:flex;align-items:center;gap:8px;">
+            <p class="mono" style="font-size:9px;color:var(--text-dimmer);">Confirmar con proveedor:</p>
+            <p class="mono" style="font-size:9px;color:var(--c3);">¿Se puede crear una cita por API?</p>
+          </div>
+        </div>
+
+        <!-- Capacidad 3 -->
+        <div style="padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--c2);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:24px;height:24px;border-radius:2px;background:var(--c2-dim);border:1px solid var(--c2-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <p style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--c2);">3</p>
+              </div>
+              <p style="font-size:13px;font-weight:500;">Notificación cuando se agenda una cita</p>
+            </div>
+            <span class="tag tag-y" style="font-size:9px;flex-shrink:0;">Webhook</span>
+          </div>
+          <p class="body-sm" style="margin-bottom:10px;">Un aviso automático que el sistema envíe a GoHighLevel cada vez que una cita sea creada o confirmada, incluyendo fecha y hora. Con este aviso se activan las automatizaciones de comunicación con el paciente.</p>
+          <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;">
+            <div style="display:flex;gap:8px;align-items:center;padding:6px 12px;background:var(--surface2);">
+              <div style="width:4px;height:4px;border-radius:50%;background:var(--c2);flex-shrink:0;"></div>
+              <p class="mono" style="font-size:9px;color:var(--text-dim);">Activa recordatorio al paciente 24h antes de la cita</p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;padding:6px 12px;background:var(--surface2);">
+              <div style="width:4px;height:4px;border-radius:50%;background:var(--c2);flex-shrink:0;"></div>
+              <p class="mono" style="font-size:9px;color:var(--text-dim);">Activa encuesta de satisfacción 4 horas después de la consulta</p>
+            </div>
+          </div>
+          <div style="padding:8px 12px;background:var(--surface2);display:flex;align-items:center;gap:8px;">
+            <p class="mono" style="font-size:9px;color:var(--text-dimmer);">Confirmar con proveedor:</p>
+            <p class="mono" style="font-size:9px;color:var(--c2);">¿Soporta webhooks o notificaciones de eventos?</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</script>
+</body>
+</html>
